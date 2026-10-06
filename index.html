@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Studio | 3D Design Agency</title>
+    <meta
+      name="description"
+      content="Immersive digital experiences, product storytelling, and 3D design for brands ready to stand out."
+    />
+    <style>
+      :root {
+        --bg: #070b17;
+        --bg-2: #0d1427;
+        --bg-3: #101b34;
+        --panel: rgba(11, 18, 32, 0.7);
+        --panel-border: rgba(255, 255, 255, 0.12);
+        --text: #edf4ff;
+        --muted: #9aaac6;
+        --primary: #7c9cff;
+        --secondary: #61f0c1;
+        --accent: #ff7bd5;
+        --soft: rgba(124, 156, 255, 0.14);
+        --shadow: rgba(0, 0, 0, 0.35);
+        --card: rgba(14, 20, 34, 0.74);
+      }
+
+      * { box-sizing: border-box; }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #0f1a2d 0%, var(--bg) 38%, #040810 100%);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      a { color: inherit; text-decoration: none; }
+      img { max-width: 100%; display: block; }
+      button { font: inherit; }
+
+      #scene {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        display: block;
+        opacity: 0.9;
+      }
+
+      .noise {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.015), rgba(255,255,255,0.015)),
+          radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+        background-size: 100% 100%, 18px 18px;
+        opacity: 0.4;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .page {
+        position: relative;
+        z-index: 2;
+      }
+
+      .container {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        backdrop-filter: blur(16px);
+        background: rgba(7, 11, 23, 0.35);
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+
+      .topbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+      }
+
+      .brand-mark {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        box-shadow: 0 0 24px rgba(124, 156, 255, 0.8);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .nav a {
+        transition: color 0.2s ease;
+      }
+
+      .nav a:hover { color: var(--text); }
+
+      .nav .btn {
+        border: 1px solid var(--panel-border);
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+      }
+
+      .hero {
+        padding-top: 64px;
+        padding-bottom: 36px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        align-items: center;
+        gap: 30px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(124, 156, 255, 0.08);
+        border: 1px solid rgba(124, 156, 255, 0.18);
+        color: #dfe9ff;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.71rem;
+        margin-bottom: 20px;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--secondary), var(--primary));
+        box-shadow: 0 0 18px rgba(97,240,193,0.8);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(3.4rem, 6vw, 6.2rem);
+        line-height: 0.96;
+        letter-spacing: -0.065em;
+      }
+
+      .lead {
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 1.12rem;
+        line-height: 1.8;
+        max-width: 560px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 32px;
+      }
+
+      .btn-primary, .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 24px;
+        border-radius: 999px;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), #8d7dff);
+        box-shadow: 0 18px 40px rgba(124, 156, 255, 0.35);
+      }
+
+      .btn-secondary {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--panel-border);
+      }
+
+      .btn-primary:hover, .btn-secondary:hover {
+        transform: translateY(-2px);
+      }
+
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 26px;
+        margin-top: 42px;
+      }
+
+      .stat {
+        min-width: 110px;
+      }
+
+      .stat strong {
+        display: block;
+        font-size: clamp(1.5rem, 2vw, 2rem);
+        letter-spacing: -0.05em;
+      }
+
+      .stat span {
+        color: var(--muted);
+      }
+
+      .hero-visual {
+        position: relative;
+        height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .ring {
+        position: absolute;
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow:
+          inset 0 0 30px rgba(124,156,255,0.08),
+          0 0 60px rgba(124,156,255,0.12);
+      }
+
+      .ring::before, .ring::after {
+        content: "";
+        position: absolute;
+        inset: 20px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.07);
+      }
+
+      .orb {
+        position: absolute;
+        border-radius: 24px;
+        background: rgba(18, 24, 37, 0.45);
+        border: 1px solid rgba(255,255,255,0.12);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+      }
+
+      .card-a {
+        width: 220px;
+        height: 180px;
+        right: 100px;
+        top: 90px;
+        transform: rotate(12deg);
+        padding: 18px;
+      }
+
+      .card-b {
+        width: 270px;
+        height: 210px;
+        left: 30px;
+        bottom: 65px;
+        transform: rotate(-12deg);
+        padding: 18px;
+      }
+
+      .card-c {
+        width: 190px;
+        height: 150px;
+        right: 20px;
+        bottom: 70px;
+        transform: rotate(8deg);
+        padding: 16px;
+      }
+
+      .mini-label {
+        color: var(--muted);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 0.68rem;
+      }
+
+      .mini-title {
+        margin-top: 16px;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+      }
+
+      .bar {
+        margin-top: 18px;
+        width: 100%;
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(124,156,255,0.9), rgba(97,240,193,0.8));
+        box-shadow: 0 0 28px rgba(124,156,255,0.42);
+      }
+
+      .tiny-grid {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .tiny-grid span {
+        display: block;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
+      }
+
+      .section {
+        padding: 90px 0;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 36px;
+      }
+
+      .section-header h2 {
+        margin: 0;
+        font-size: clamp(2.2rem, 3vw, 3.3rem);
+        letter-spacing: -0.06em;
+      }
+
+      .section-header p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+        max-width: 470px;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .feature-card {
+        background: rgba(14, 19, 31, 0.6);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: 0 20px 45px rgba(0,0,0,0.16);
+      }
+
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(124,156,255,0.22), rgba(97,240,193,0.18));
+        border: 1px solid rgba(124,156,255,0.18);
+        margin-bottom: 18px;
+        font-size: 1.5rem;
+      }
+
+      .feature-card h3 {
+        margin: 0 0 12px;
+        font-size: 1.5rem;
+        letter-spacing: -0.04em;
+      }
+
+      .feature-card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .projects {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .project-card {
+        background: rgba(13, 20, 35, 0.7);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 30px;
+        overflow: hidden;
+      }
+
+      .project-visual {
+        height: 260px;
+        background: linear-gradient(135deg, rgba(124,156,255,0.22), rgba(255,123,213,0.18), rgba(97,240,193,0.12));
+        position: relative;
+        overflow: hidden;
+      }
+
+      .project-visual::before,
+      .project-visual::after {
+        content: "";
+        position: absolute;
+        inset: auto;
+        border-radius: 50%;
+        filter: blur(16px);
+      }
+
+      .project-visual::before {
+        width: 150px;
+        height: 150px;
+        background: rgba(124,156,255,0.35);
+        left: 18%;
+        top: 18%;
+      }
+
+      .project-visual::after {
+        width: 180px;
+        height: 180px;
+        background: rgba(255,123,213,0.24);
+        right: 14%;
+        bottom: 10%;
+      }
+
+      .shape-hex {
+        position: absolute;
+        inset: 50% auto auto 50%;
+        width: 130px;
+        height: 130px;
+        transform: translate(-50%, -50%) rotate(20deg);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 22px;
+        background: rgba(255,255,255,0.02);
+      }
+
+      .project-content {
+        padding: 26px 24px 28px;
+      }
+
+      .project-kicker {
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.7rem;
+      }
+
+      .project-content h3 {
+        margin: 12px 0 12px;
+        font-size: 2rem;
+        letter-spacing: -0.05em;
+      }
+
+      .project-content p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .project-link {
+        color: #dfe9ff;
+        font-weight: 600;
+      }
+
+      .process {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .step {
+        background: rgba(11, 18, 31, 0.68);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 24px;
+        padding: 24px 20px;
+      }
+
+      .step-no {
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .step h3 {
+        margin: 16px 0 10px;
+        font-size: 1.45rem;
+        letter-spacing: -0.04em;
+      }
+
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .cta {
+        padding: 50px 20px 100px;
+      }
+
+      .cta-box {
+        background: linear-gradient(135deg, rgba(124,156,255,0.12), rgba(255,123,213,0.09), rgba(97,240,193,0.06));
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 28px 30px;
+        box-shadow: 0 30px 85px rgba(0,0,0,0.18);
+      }
+
+      .cta-box h3 {
+        margin: 0 0 8px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        letter-spacing: -0.06em;
+      }
+
+      .cta-box p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      footer {
+        padding: 20px 0 38px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .footer-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .features,
+        .projects,
+        .process {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 42px;
+        }
+
+        .hero-visual {
+          height: 500px;
+        }
+
+        .section-header,
+        .cta-box,
+        .footer-inner {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .nav {
+          display: none;
+        }
+
+        .brand {
+          letter-spacing: 0.08em;
+        }
+
+        .card-a, .card-b, .card-c {
+          transform: none;
+          width: 180px;
+          height: 140px;
+        }
+
+        .card-a { right: 20px; top: 50px; }
+        .card-b { left: 4px; bottom: 25px; }
+        .card-c { right: 12px; bottom: 10px; }
+
+        .actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .btn-primary, .btn-secondary {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <div class="noise"></div>
+
+    <div class="page">
+      <header class="topbar">
+        <div class="container topbar-inner">
+          <div class="brand">
+            <span class="brand-mark"></span>
+            <span>Nova Studio</span>
+          </div>
+
+          <nav class="nav" aria-label="Main navigation">
+            <a href="#work">Work</a>
+            <a href="#services">Services</a>
+            <a href="#process">Process</a>
+            <a href="#contact" class="btn">Book a Call</a>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="container hero-grid">
+            <div>
+              <div class="eyebrow">Immersive experiences</div>
+              <h1>Build the future in 3D.</h1>
+              <p class="lead">
+                We craft memorable digital experiences that blend strategy, motion, and product storytelling
+                to help ambitious brands stand out in a crowded market.
+              </p>
+
+              <div class="actions">
+                <a href="#contact" class="btn-primary">Start a Project</a>
+                <a href="#work" class="btn-secondary">View Work</a>
+              </div>
+
+              <div class="stats">
+                <div class="stat">
+                  <strong>8+</strong>
+                  <span>Years</span>
+                </div>
+                <div class="stat">
+                  <strong>60</strong>
+                  <span>Launches</span>
+                </div>
+                <div class="stat">
+                  <strong>24/7</strong>
+                  <span>Creative</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-visual" aria-label="3D showcase">
+              <div class="ring"></div>
+
+              <div class="orb card-a">
+                <div class="mini-label">Campaign</div>
+                <div class="mini-title">Astra</div>
+                <div class="bar"></div>
+                <div class="tiny-grid">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+
+              <div class="orb card-b">
+                <div class="mini-label">Engagement</div>
+                <div class="mini-title">360°</div>
+                <div class="bar" style="background: linear-gradient(90deg, rgba(97,240,193,0.9), rgba(124,156,255,0.8));"></div>
+                <div class="tiny-grid">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+
+              <div class="orb card-c">
+                <div class="mini-label">Motion</div>
+                <div class="mini-title">Flow</div>
+                <div class="bar" style="background: linear-gradient(90deg, rgba(255,123,213,0.9), rgba(124,156,255,0.8));"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="services">
+          <div class="container">
+            <div class="section-header">
+              <h2>We turn complex ideas into cinematic experiences.</h2>
+              <p>
+                From startup launches to premium web experiences, we help brands connect with people through
+                strategy, visuals, and interaction design.
+              </p>
+            </div>
+
+            <div class="features">
+              <article class="feature-card">
+                <div class="feature-icon">✦</div>
+                <h3>Brand Systems</h3>
+                <p>
+                  Positioning, messaging, and visual identity systems designed to look premium and feel unmistakably yours.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-icon">◎</div>
+                <h3>3D Product Design</h3>
+                <p>
+                  Interactive product storytelling that adds depth, movement, and clarity to your value proposition.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-icon">▣</div>
+                <h3>Launch Campaigns</h3>
+                <p>
+                  High-converting landing experiences built to engage, educate, and influence action from day one.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="work">
+          <div class="container">
+            <div class="section-header">
+              <h2>Selected work.</h2>
+              <p>Built for founders, brands, and teams who want products that move people and spark momentum.</p>
+            </div>
+
+            <div class="projects">
+              <article class="project-card">
+                <div class="project-visual">
+                  <div class="shape-hex"></div>
+                </div>
+                <div class="project-content">
+                  <div class="project-kicker">SaaS / Product</div>
+                  <h3>Astra OS</h3>
+                  <p>Reimagining a B2B platform with immersive storytelling and a more human digital experience.</p>
+                  <a href="#contact" class="project-link">Explore case study →</a>
+                </div>
+              </article>
+
+              <article class="project-card">
+                <div class="project-visual" style="background: linear-gradient(135deg, rgba(97,240,193,0.16), rgba(124,156,255,0.12), rgba(255,123,213,0.12));">
+                  <div class="shape-hex" style="transform: translate(-50%, -50%) rotate(-18deg);"></div>
+                </div>
+                <div class="project-content">
+                  <div class="project-kicker">Brand / Launch</div>
+                  <h3>Velora</h3>
+                  <p>Created a premium launch narrative and visual language that elevated the brand before the first demo.</p>
+                  <a href="#contact" class="project-link">Explore case study →</a>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="process">
+          <div class="container">
+            <div class="section-header">
+              <h2>How we work.</h2>
+              <p>Simple, collaborative, and built to keep the project moving from concept to launch.</p>
+            </div>
+
+            <div class="process">
+              <div class="step">
+                <div class="step-no">01</div>
+                <h3>Discover</h3>
+                <p>We align on goals, audience, and what makes your brand worth remembering.</p>
+              </div>
+
+              <div class="step">
+                <div class="step-no">02</div>
+                <h3>Design</h3>
+                <p>We turn strategy into motions, layouts, and interfaces with visual depth and clarity.</p>
+              </div>
+
+              <div class="step">
+                <div class="step-no">03</div>
+                <h3>Develop</h3>
+                <p>We build responsive, polished experiences that feel smooth and premium across devices.</p>
+              </div>
+
+              <div class="step">
+                <div class="step-no">04</div>
+                <h3>Launch</h3>
+                <p>We optimize for performance, clarity, and momentum so your site is ready to win attention.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="cta" id="contact">
+          <div class="container">
+            <div class="cta-box">
+              <div>
+                <h3>Ready to build something unforgettable?</h3>
+                <p>Let’s shape a digital experience that feels premium, clear, and built for growth.</p>
+              </div>
+              <a href="mailto:hello@novastudio.example" class="btn-primary">hello@novastudio.example</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div class="container footer-inner">
+          <div class="brand">
+            <span class="brand-mark"></span>
+            <span>Nova Studio</span>
+          </div>
+          <div>© 2026 Nova Studio</div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module">
+      import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+      const canvas = document.getElementById("scene");
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 0, 6.5);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 1.4);
+      scene.add(ambient);
+
+      const dirLight = new THREE.DirectionalLight(0x8bb4ff, 2.4);
+      dirLight.position.set(5, 4, 4);
+      scene.add(dirLight);
+
+      const pointLight = new THREE.PointLight(0xff7bd5, 20, 18, 2);
+      pointLight.position.set(-4, -2, 3);
+      scene.add(pointLight);
+
+      const group = new THREE.Group();
+      scene.add(group);
+
+      const material1 = new THREE.MeshPhysicalMaterial({
+        color: 0x7c9cff,
+        metalness: 0.7,
+        roughness: 0.18,
+        emissive: 0x15264d,
+        transparent: true,
+        opacity: 0.96
+      });
+
+      const material2 = new THREE.MeshPhysicalMaterial({
+        color: 0x61f0c1,
+        metalness: 0.5,
+        roughness: 0.25,
+        emissive: 0x0e312f,
+        transparent: true,
+        opacity: 0.9
+      });
+
+      const mainMesh = new THREE.Mesh(
+        new THREE.TorusKnotGeometry(1.1, 0.34, 180, 28),
+        material1
+      );
+      mainMesh.rotation.x = 1.2;
+      group.add(mainMesh);
+
+      const innerMesh = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(1.35, 1),
+        material2
+      );
+      innerMesh.scale.set(0.7, 0.7, 0.7);
+      group.add(innerMesh);
+
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(2.3, 0.02, 16, 120),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 })
+      );
+      ring.rotation.x = 1.3;
+      ring.rotation.y = 0.8;
+      group.add(ring);
+
+      const particlesGeometry = new THREE.BufferGeometry();
+      const particlesCount = 1800;
+      const positions = new Float32Array(particlesCount * 3);
+
+      for (let i = 0; i < particlesCount; i++) {
+        const i3 = i * 3;
+        positions[i3] = (Math.random() - 0.5) * 10;
+        positions[i3 + 1] = (Math.random() - 0.5) * 10;
+        positions[i3 + 2] = (Math.random() - 0.5) * 10;
+      }
+
+      particlesGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+      const particles = new THREE.Points(
+        particlesGeometry,
+        new THREE.PointsMaterial({
+          color: 0xaec2ff,
+          size: 0.025,
+          transparent: true,
+          opacity: 0.82
+        })
+      );
+      scene.add(particles);
+
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
+
+      window.addEventListener("pointermove", (event) => {
+        mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+        mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+      });
+
+      function resize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      window.addEventListener("resize", resize);
+      resize();
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        const t = clock.getElapsedTime();
+
+        targetX += (mouseX * 0.7 - targetX) * 0.04;
+        targetY += (mouseY * 0.6 - targetY) * 0.04;
+
+        group.rotation.y += 0.0038;
+        group.rotation.x = 0.6 + targetY * 0.8;
+        group.rotation.z = targetX * 0.8;
+
+        mainMesh.rotation.x += 0.008;
+        mainMesh.rotation.y += 0.01;
+
+        innerMesh.rotation.x -= 0.008;
+        innerMesh.rotation.y += 0.015;
+
+        particles.rotation.y = t * 0.08;
+        particles.rotation.x = t * 0.05;
+
+        ring.rotation.z -= 0.004;
+        ring.rotation.y += 0.004;
+
+        camera.position.x += (targetX * 1.5 - camera.position.x) * 0.04;
+        camera.position.y += (targetY * 1.2 - camera.position.y) * 0.04;
+        camera.lookAt(0, 0, 0);
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
